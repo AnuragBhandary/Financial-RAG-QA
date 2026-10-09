@@ -111,7 +111,7 @@ def train_reranker(
     )
     from transformers import TrainerCallback
 
-    class FreeMpsCache(TrainerCallback):
+    class FreeMpsCache(TrainerCallback):  # type: ignore[misc,unused-ignore]  # Any without the train extra
         """Dynamic padding gives nearly every batch a new shape, and the MPS allocator keeps
         buffers for each one: without this the process grew to 17 GB and swapped."""
 
@@ -219,7 +219,7 @@ def train_embedder(
         }
     )
 
-    class FreeMpsCache(TrainerCallback):
+    class FreeMpsCache(TrainerCallback):  # type: ignore[misc,unused-ignore]  # Any without the train extra
         def on_step_end(self, args: Any, state: Any, control: Any, **kwargs: Any) -> None:
             if state.global_step % 25 == 0 and torch.backends.mps.is_available():
                 torch.mps.empty_cache()
