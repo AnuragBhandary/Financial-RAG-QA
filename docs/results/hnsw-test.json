@@ -1,0 +1,33 @@
+{
+  "queries": 648,
+  "exact": {
+    "recall@10_vs_exact": 1.0,
+    "ndcg@10": 0.4138,
+    "p50_ms": 60.69,
+    "p95_ms": 65.31
+  },
+  "ef_search=10": {
+    "recall@10_vs_exact": 0.9205,
+    "ndcg@10": 0.4069,
+    "p50_ms": 0.72,
+    "p95_ms": 1.27
+  },
+  "ef_search=40": {
+    "recall@10_vs_exact": 0.9841,
+    "ndcg@10": 0.4108,
+    "p50_ms": 0.97,
+    "p95_ms": 1.27
+  },
+  "ef_search=100": {
+    "recall@10_vs_exact": 0.9965,
+    "ndcg@10": 0.4136,
+    "p50_ms": 1.7,
+    "p95_ms": 2.5
+  },
+  "ef_search=200": {
+    "recall@10_vs_exact": 0.9986,
+    "ndcg@10": 0.4136,
+    "p50_ms": 2.92,
+    "p95_ms": 4.44
+  }
+}

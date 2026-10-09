@@ -1,0 +1,24 @@
+[
+  {
+    "variant": "rag-hybrid-rerank",
+    "baseline": "rag-bm25",
+    "questions_both_answered": 134,
+    "variant_faithfulness": 0.8132,
+    "baseline_faithfulness": 0.6974,
+    "delta": 0.1158,
+    "p_value": 0.0001,
+    "better": 63,
+    "worse": 32
+  },
+  {
+    "variant": "agent",
+    "baseline": "rag-hybrid-rerank",
+    "questions_both_answered": 143,
+    "variant_faithfulness": 0.9358,
+    "baseline_faithfulness": 0.8076,
+    "delta": 0.1282,
+    "p_value": 0.0001,
+    "better": 65,
+    "worse": 13
+  }
+]

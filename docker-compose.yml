@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: finrag
+      POSTGRES_PASSWORD: finrag
+      POSTGRES_DB: finrag
+    command: >-
+      postgres -c shared_buffers=1GB -c maintenance_work_mem=1GB -c max_parallel_maintenance_workers=4
+    shm_size: 2gb  # parallel HNSW builds use dynamic shared memory (default /dev/shm is 64 MB)
+    ports: ["5436:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finrag"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: .
+    profiles: [api]
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://finrag:finrag@postgres:5432/finrag
+      OLLAMA_URL: http://host.docker.internal:11434
+      FINRAG_DEVICE: cpu
+      HF_HUB_OFFLINE: "1"
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      # Reuse the host's downloaded models instead of fetching ~1.5 GB again.
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+    ports: ["8000:8000"]
+
+volumes:
+  pgdata:

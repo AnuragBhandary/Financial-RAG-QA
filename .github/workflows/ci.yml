@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: finrag
+          POSTGRES_PASSWORD: finrag
+          POSTGRES_DB: finrag
+        ports: ["5436:5432"]
+        options: >-
+          --health-cmd "pg_isready -U finrag" --health-interval 2s --health-timeout 3s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      # No torch here: tests use hashing embeddings, an overlap reranker and fake LLMs.
+      - run: uv sync --frozen
+      - name: Unit + integration tests (pgvector, BM25, fusion, rerank, agent graph, API, MCP)
+        run: uv run pytest --cov --cov-report=term --cov-fail-under=85
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the API image (CPU torch)
+        run: docker build -t finrag-api .
+      - name: Image imports and CLI work
+        run: docker run --rm finrag-api uv run --no-sync finrag --help

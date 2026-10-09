@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>finrag</title>
+<style>
+  :root { --bg:#0f1115; --panel:#171a21; --text:#e6e6e6; --muted:#9aa3b2; --accent:#4cc9f0; --bad:#ff6b6b; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.55 system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 20px; margin: 0 0 4px; } .sub { color: var(--muted); margin: 0 0 20px; font-size: 13px; }
+  form { display:flex; gap:8px; flex-wrap:wrap; }
+  input[type=text] { flex:1 1 360px; padding:10px 12px; border-radius:8px; border:1px solid #2a2f3a; background:var(--panel); color:var(--text); font-size:15px; }
+  select, button { padding:10px 12px; border-radius:8px; border:1px solid #2a2f3a; background:var(--panel); color:var(--text); }
+  button { background: var(--accent); color:#000; border:0; font-weight:600; cursor:pointer; }
+  #answer { white-space: pre-wrap; background:var(--panel); padding:16px; border-radius:10px; margin-top:20px; min-height: 48px; }
+  .cite { color: var(--accent); font-weight:600; } .cite.bad { color: var(--bad); }
+  #meta { color: var(--muted); font-size:12px; margin-top:8px; }
+  ol { padding-left: 22px; } li { margin: 10px 0; color: #cfd5df; font-size: 14px; }
+  li .id { color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>finrag</h1>
+  <p class="sub">Cited answers over 57,638 FiQA personal-finance posts. Every claim links to its passage.</p>
+  <form id="f">
+    <input id="q" type="text" placeholder="e.g. Is it better to pay off my mortgage early or invest?" required minlength="3">
+    <select id="mode">
+      <option value="hybrid+rerank">hybrid + rerank</option>
+      <option value="hybrid">hybrid</option>
+      <option value="dense">dense</option>
+      <option value="bm25">BM25</option>
+    </select>
+    <button>Ask</button>
+  </form>
+  <div id="answer"></div>
+  <div id="meta"></div>
+  <ol id="passages"></ol>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+let nPassages = 0;
+function render(text) {
+  return esc(text).replace(/\[(\d+(?:\s*,\s*\d+)*)\]/g, (m, nums) => {
+    const ok = nums.split(",").every((n) => +n >= 1 && +n <= nPassages);
+    return `<span class="cite${ok ? "" : " bad"}">${m}</span>`;
+  });
+}
+$("f").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("answer").textContent = "…"; $("meta").textContent = ""; $("passages").innerHTML = "";
+  const res = await fetch("/ask", { method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ question: $("q").value, mode: $("mode").value }) });
+  const reader = res.body.getReader(); const dec = new TextDecoder();
+  let buf = "", text = "";
+  for (;;) {
+    const { value, done } = await reader.read(); if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i;
+    while ((i = buf.indexOf("\n\n")) >= 0) {
+      const block = buf.slice(0, i); buf = buf.slice(i + 2);
+      const ev = block.match(/^event: (.*)$/m)[1]; const data = JSON.parse(block.match(/^data: (.*)$/m)[1]);
+      if (ev === "passages") {
+        nPassages = data.length;
+        $("passages").innerHTML = data.map((p) =>
+          `<li><span class="id">doc ${p.doc_id} · score ${p.score}</span><br>${esc(p.text.slice(0, 600))}${p.text.length > 600 ? "…" : ""}</li>`).join("");
+      } else if (ev === "token") { text += data; $("answer").innerHTML = render(text); }
+      else if (ev === "done") {
+        const t = data.timings_ms;
+        $("meta").textContent = `retrieval ${t.retrieval_total} ms (rerank ${t.rerank}) · first token ${t.first_token} ms · total ${t.total} ms`
+          + (data.invalid_citations.length ? ` · invalid citations: ${data.invalid_citations}` : "");
+      } else if (ev === "error") { $("answer").textContent = "Error: " + data; }
+    }
+  }
+});
+</script>
+</body>
+</html>

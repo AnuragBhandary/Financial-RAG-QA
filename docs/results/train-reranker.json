@@ -1,0 +1,12 @@
+{
+  "base_model": "BAAI/bge-reranker-base",
+  "pairs": 52666,
+  "positives": 14166,
+  "hard_negatives": 38500,
+  "epochs": 1.0,
+  "batch_size": 16,
+  "lr": 2e-05,
+  "max_length": 256,
+  "train_seconds": 2607,
+  "device": "mps:0"
+}

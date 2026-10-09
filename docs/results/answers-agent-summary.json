@@ -1,0 +1,18 @@
+{
+  "system": "agent",
+  "judge": "qwen3:14b",
+  "questions": 150,
+  "abstain_rate": 0.04,
+  "sentences": 467,
+  "sentence_support_rate": 0.9336,
+  "mean_answer_faithfulness": 0.9293,
+  "fully_faithful_answers": 0.8264,
+  "answers_with_invalid_citation": 0,
+  "uncited_sentences": 0,
+  "context_has_gold": 0.64,
+  "cites_gold": 0.5625,
+  "llm_calls_mean": 3.97,
+  "tokens_mean": 2852,
+  "seconds_p50": 12.52,
+  "seconds_p95": 15.85
+}

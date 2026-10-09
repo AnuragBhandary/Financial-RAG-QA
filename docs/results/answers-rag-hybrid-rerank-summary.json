@@ -1,0 +1,18 @@
+{
+  "system": "rag:hybrid+rerank",
+  "judge": "qwen3:14b",
+  "questions": 150,
+  "abstain_rate": 0.0267,
+  "sentences": 575,
+  "sentence_support_rate": 0.8017,
+  "mean_answer_faithfulness": 0.807,
+  "fully_faithful_answers": 0.4589,
+  "answers_with_invalid_citation": 0,
+  "uncited_sentences": 38,
+  "context_has_gold": 0.6533,
+  "cites_gold": 0.5753,
+  "llm_calls_mean": 1,
+  "tokens_mean": 1085,
+  "seconds_p50": 3.42,
+  "seconds_p95": 4.59
+}
