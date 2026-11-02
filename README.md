@@ -72,7 +72,6 @@ flowchart LR
   generator), checked against hand labels with Cohen's kappa.
 
 Why each piece is the way it is: **[docs/DESIGN.md](docs/DESIGN.md)**.
-How to study and defend it: **[docs/INTERVIEW.md](docs/INTERVIEW.md)**.
 
 ## Quick start
 
